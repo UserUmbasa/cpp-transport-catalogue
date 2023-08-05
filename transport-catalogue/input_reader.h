@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-/*input_reader.h, input_reader.cpp — чтение запросов на заполнение базы;*/
+
 
 namespace fill {
 
