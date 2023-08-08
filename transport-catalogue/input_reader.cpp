@@ -4,115 +4,136 @@
 #include <vector>
 #include <cmath>
 
-void fill::TransportCatalogue(infocatalogueclass::TransportCatalogue& ctlg) {
-    size_t count;
-
-    std::vector<std::string> buses_;           
-    std::vector<std::string> stops_;           
-    std::vector<std::string> stop_distances_;  
-
-    std::cin >> count;
-    for (size_t i = 0; i < count; ++i) {
-        std::string keyword, inf;
-        std::cin >> keyword;
-        std::getline(std::cin, inf);
-        if (keyword == "Stop") {
-            stops_.push_back(inf);
-        }
-        if (keyword == "Bus") {
-            buses_.push_back(inf);
-        }
-    }
-    stop_distances_ = stops_;
-    for (auto& stop_ : stops_) 
+namespace info_catalogue_class
+{
+    void Transport_Catalogue(std::istream& input,TransportCatalogue& ctlg)
     {
-        infostruct::Stop stop = ParseStop(stop_);
-        ctlg.AddBusStop(stop);
-    }
-    for (auto& stop_ : stop_distances_) {
-        AddStopDistances(stop_, ctlg);
-    }
-    for (auto& bus_ : buses_) {
-        infostruct::Bus bus = ParseBus(bus_);
-        ctlg.AddBusRoute(bus);
-        bus = {};
-    }
-}
+        std::string count;
+        std::getline(input, count);
 
-infostruct::Stop fill::ParseStop(std::string& inf) {
-    infostruct::Stop stop;
-    std::string stop_name = inf.substr(1, inf.find_first_of(':') - inf.find_first_of(' ') - 1);
+        std::string str;
+        std::vector<std::string> buses_;           //автобусы
+        std::vector<std::string> stops_;           //остановки
 
-    double latitude = std::stod(inf.substr(inf.find_first_of(':') + 2, inf.find_first_of(',') - 1));
-    double longitude;
-    inf.erase(0, inf.find_first_of(',') + 2);
-    if (inf.find_last_of(',') == inf.npos) {
-        longitude = std::stod(inf.substr(0, inf.npos - 1));
-        inf.clear();
-    }
-    else {
-        longitude = std::stod(inf.substr(0, inf.find_first_of(',')));
-        inf.erase(0, inf.find_first_of(',') + 2);
-    }
-    coordinate::Coordinates stop_coordinates = { latitude, longitude };
+        int amount = stoi(count);
+        auto bus_distance = 3;
 
-    stop.name = stop_name;
-    stop.coordinates = stop_coordinates;
+        for (int i = 0; i < amount; ++i) {
+            std::getline(input, str);
 
-    return stop;
-}
+            if (str != "") {
+                auto space_pos = str.find_first_not_of(' ');
+                str = str.substr(space_pos);
 
-infostruct::Bus fill::ParseBus(std::string& inf) {
-    infostruct::Bus bus_info;
-    std::vector<std::string> route_stops;
-    std::string route_number = inf.substr(1, inf.find_first_of(':') - 1);
-    inf.erase(0, inf.find_first_of(':') + 2);
-    bool circular_route = false;
-    std::string stop_name;
-    auto pos = inf.find('>') != inf.npos ? '>' : '-';
-    while (inf.find(pos) != inf.npos) {
-        stop_name = inf.substr(0, inf.find_first_of(pos) - 1);
-        route_stops.push_back(stop_name);
-        inf.erase(0, inf.find_first_of(pos) + 2);
-    }
-    stop_name = inf.substr(0, inf.npos - 1);
-    route_stops.push_back(stop_name);
-    if (pos == '>') circular_route = true;
-
-    bus_info.circular_route = circular_route;
-    bus_info.number = route_number;
-    bus_info.stops = route_stops;
-    return bus_info;
-}
-
-void fill::AddStopDistances(std::string& inf, infocatalogueclass::TransportCatalogue& ctlg) {
-    if (!inf.empty()) {
-        std::string stop_from_name = ParseStop(inf).name;
-        infostruct::Stop* from = ctlg.FindBusStop(stop_from_name);
-
-        while (!inf.empty()) {
-            int distanse = 0;
-            std::string stop_to_name;
-            distanse = std::stoi(inf.substr(0, inf.find_first_of("m to ")));
-            inf.erase(0, inf.find_first_of("m to ") + 5);
-            if (inf.find("m to ") == inf.npos) {
-                stop_to_name = inf.substr(0, inf.npos - 1);
-                infostruct::Stop* to = ctlg.FindBusStop(stop_to_name);
-                ctlg.SetStopDistance(from, to, distanse);
-                if (!ctlg.FindBusStop(to->name)->stop_distances.count(from->name)) {
-                    ctlg.SetStopDistance(to, from, distanse);
+                if (str.substr(0, bus_distance) != "Bus") {
+                    stops_.push_back(str);
                 }
-                inf.clear();
+                else {
+                    buses_.push_back(str);
+                }
+            }
+        }
+
+        for (auto& stop_ : stops_)
+        {
+            ctlg.Add_Stop(Parse_Stop(stop_));
+        }
+        for (auto& stop_ : stops_) {
+            ctlg.Add_Distance(Parse_Distances(stop_, ctlg));
+        }
+        for (auto& bus_ : buses_) {
+            ctlg.Add_Bus(Parse_Bus(bus_, ctlg));
+        }
+    }
+
+    info_struct::Stop Parse_Stop(std::string& inf)
+    {
+        auto twopoint_pos = inf.find(':');
+        auto comma_pos = inf.find(',');
+        auto entry_length = 5;
+        auto distance = 2;
+        info_struct::Stop stop;
+
+        stop.name = inf.substr(entry_length,
+            twopoint_pos - entry_length);
+        stop.latitude = stod(inf.substr(twopoint_pos + distance,
+            comma_pos - twopoint_pos - distance));
+        stop.longitude = stod(inf.substr(comma_pos + distance));
+
+        return stop;
+    }
+
+
+    info_struct::Bus Parse_Bus(std::string& inf, TransportCatalogue& ctlg)
+    {
+        
+            auto entry_length = 4;
+            auto distance = 2;
+            auto twopoint_pos = inf.find(':');
+            info_struct::Bus bus;
+            bus.name = inf.substr(entry_length,
+                twopoint_pos - entry_length);
+
+            inf = inf.substr(twopoint_pos + distance);
+
+            auto more_pos = inf.find('>');
+            if (more_pos == std::string_view::npos) {
+                auto tire_pos = inf.find('-');
+
+                while (tire_pos != std::string_view::npos) {
+                    bus.stops.push_back(ctlg.get_stop(inf.substr(0, tire_pos - 1)));
+
+                    inf = inf.substr(tire_pos + distance);
+                    tire_pos = inf.find('-');
+                }
+
+                bus.stops.push_back(ctlg.get_stop(inf.substr(0, tire_pos - 1)));
+                size_t size = bus.stops.size() - 1;
+
+                for (size_t i = size; i > 0; i--) {
+                    bus.stops.push_back(bus.stops[i - 1]);
+                }
+
             }
             else {
-                stop_to_name = inf.substr(0, inf.find_first_of(','));
-                infostruct::Stop* to = ctlg.FindBusStop(stop_to_name);
-                ctlg.SetStopDistance(from, to, distanse);
-                if (!ctlg.FindBusStop(to->name)->stop_distances.count(from->name)) {
-                    ctlg.SetStopDistance(to, from, distanse);
+                while (more_pos != std::string_view::npos) {
+                    bus.stops.push_back(ctlg.get_stop(inf.substr(0, more_pos - 1)));
+
+                    inf = inf.substr(more_pos + distance);
+                    more_pos = inf.find('>');
                 }
-                inf.erase(0, inf.find_first_of(',') + 2);
+
+                bus.stops.push_back(ctlg.get_stop(inf.substr(0, more_pos - 1)));
             }
+
+            return bus;
+    }
+
+    std::vector<info_struct::Distance>Parse_Distances(const std::string& inf, TransportCatalogue& ctlg)
+    {
+        std::vector<info_struct::Distance> distances;
+        auto entry_length = 5;
+        auto twopoint_pos = inf.find(':');
+        auto space = 2;
+
+        std::string str_copy = inf;
+        std::string name = str_copy.substr(entry_length,
+            twopoint_pos - entry_length);
+        str_copy = str_copy.substr(str_copy.find(',') + 1);
+        str_copy = str_copy.substr(str_copy.find(',') + space);
+
+        while (str_copy.find(',') != std::string::npos) {
+            int distance = stoi(str_copy.substr(0, str_copy.find('m')));
+            std::string stop_dist_name = str_copy.substr(str_copy.find('m') + entry_length);
+            stop_dist_name = stop_dist_name.substr(0, stop_dist_name.find(','));
+            distances.push_back({ ctlg.get_stop(name),
+                                  ctlg.get_stop(stop_dist_name), distance });
+            str_copy = str_copy.substr(str_copy.find(',') + space);
         }
+        std::string last_name = str_copy.substr(str_copy.find('m') + entry_length);
+        int distance = stoi(str_copy.substr(0, str_copy.find('m')));
+        distances.push_back({ ctlg.get_stop(name), ctlg.get_stop(last_name), distance });
+
+        return distances;
     }
 }
