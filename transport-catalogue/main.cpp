@@ -3,7 +3,7 @@
 
 
 int main() {
-    infocatalogueclass::TransportCatalogue catalogue;
-    fill::TransportCatalogue(catalogue);
-    out::Transport(catalogue);
+    info_catalogue_class::TransportCatalogue catalogue;
+    Transport_Catalogue(std::cin, catalogue);
+    info_catalogue_class::out::Transport(std::cin, catalogue);
 }
