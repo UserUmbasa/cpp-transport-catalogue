@@ -11,41 +11,36 @@ void fill::TransportCatalogue(std::istream& input, info_catalogue_class::Transpo
     auto index = stoi(count);
 
     std::vector<std::string> buses_;
-    std::vector<std::string> Stops_;
     std::vector<std::string> stop_distances_;
 
     for (size_t i = 0; i < index; ++i) {
         std::string keyword, inf;
         std::cin >> keyword;
         std::getline(std::cin, inf);
-        if (keyword == "Stop") {
-            Stops_.push_back(inf);
+        if (keyword == "Stop") 
+        {
+            info_struct::Stop stop = ParseStop(inf);
+            ctlg.AddBusStop(stop);
+            stop_distances_.push_back(inf);
         }
         if (keyword == "Bus") {
             buses_.push_back(inf);
         }
     }
-    stop_distances_ = Stops_;
-    for (auto& stop_ : Stops_)
-    {
-        info_struct::Stop stop = ParseStop(stop_);
-        ctlg.AddBusStop(stop);
-    }
-    for (auto& stop_ : stop_distances_)
+    for (auto& stop_ : stop_distances_) 
     {
         AddStopDistances(stop_, ctlg);
     }
-    for (auto& bus_ : buses_)
+    for (auto& bus_ : buses_) 
     {
         ctlg.AddBusRoute(ParseBus(bus_));
     }
 }
 
-info_struct::Stop fill::ParseStop(std::string& inf)
+info_struct::Stop fill::ParseStop(std::string& inf) 
 {
     info_struct::Stop stop;
     std::string stop_name = inf.substr(1, inf.find_first_of(':') - inf.find_first_of(' ') - 1);
-
     double latitude = std::stod(inf.substr(inf.find_first_of(':') + 2, inf.find_first_of(',') - 1));
     double longitude;
     inf.erase(0, inf.find_first_of(',') + 2);
@@ -58,10 +53,8 @@ info_struct::Stop fill::ParseStop(std::string& inf)
         inf.erase(0, inf.find_first_of(',') + 2);
     }
     coordinate::Coordinates stop_coordinates = { latitude, longitude };
-
     stop.name = stop_name;
     stop.coordinates = stop_coordinates;
-
     return stop;
 }
 
@@ -89,29 +82,34 @@ info_struct::Bus fill::ParseBus(std::string& inf) {
 }
 
 void fill::AddStopDistances(std::string& inf, info_catalogue_class::TransportCatalogue& ctlg) {
-    if (!inf.empty())
+    if (!inf.empty()) 
     {
         std::string stop_from_name = ParseStop(inf).name;
         info_struct::Stop* from = ctlg.FindBusStop(stop_from_name);
-
-        while (!inf.empty())
+        
+        while (!inf.empty()) 
         {
             int distanse = 0;
             std::string stop_to_name;
             distanse = std::stoi(inf.substr(0, inf.find_first_of("m to ")));
             inf.erase(0, inf.find_first_of("m to ") + 5);
-            if (inf.find("m to ") == inf.npos)
+            if (inf.find("m to ") == inf.npos) 
             {
                 stop_to_name = inf.substr(0, inf.npos - 1);
                 info_struct::Stop* to = ctlg.FindBusStop(stop_to_name);
                 ctlg.SetStopDistance(from, to, distanse);
                 inf.clear();
             }
-            else
+            else 
             {
                 stop_to_name = inf.substr(0, inf.find_first_of(','));
                 info_struct::Stop* to = ctlg.FindBusStop(stop_to_name);
                 ctlg.SetStopDistance(from, to, distanse);
+                //ctlg.SetStopDistance(to, from, distanse);
+                /*if (!ctlg.FindBusStop(to->name)->stop_distances.count(from->name)) 
+                {
+                    ctlg.SetStopDistance(to, from, distanse);
+                }*/
                 inf.erase(0, inf.find_first_of(',') + 2);
             }
         }
