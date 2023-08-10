@@ -105,7 +105,6 @@ void fill::AddStopDistances(std::string& inf, info_catalogue_class::TransportCat
                 stop_to_name = inf.substr(0, inf.npos - 1);
                 info_struct::Stop* to = ctlg.FindBusStop(stop_to_name);
                 ctlg.SetStopDistance(from, to, distanse);
-                ctlg.SetStopDistance(to, from, distanse);
                 inf.clear();
             }
             else
@@ -113,7 +112,6 @@ void fill::AddStopDistances(std::string& inf, info_catalogue_class::TransportCat
                 stop_to_name = inf.substr(0, inf.find_first_of(','));
                 info_struct::Stop* to = ctlg.FindBusStop(stop_to_name);
                 ctlg.SetStopDistance(from, to, distanse);
-                ctlg.SetStopDistance(to, from, distanse);
                 inf.erase(0, inf.find_first_of(',') + 2);
             }
         }
