@@ -26,24 +26,24 @@ void fill::TransportCatalogue(std::istream& input, info_catalogue_class::Transpo
         }
     }
     stop_distances_ = Stops_;
-    for (auto& stop_ : Stops_) 
+    for (auto& stop_ : Stops_)
     {
-        infostruct::Stop stop = ParseStop(stop_);
+        info_struct::Stop stop = ParseStop(stop_);
         ctlg.AddBusStop(stop);
     }
-    for (auto& stop_ : stop_distances_) 
+    for (auto& stop_ : stop_distances_)
     {
         AddStopDistances(stop_, ctlg);
     }
-    for (auto& bus_ : buses_) 
+    for (auto& bus_ : buses_)
     {
         ctlg.AddBusRoute(ParseBus(bus_));
     }
 }
 
-infostruct::Stop fill::ParseStop(std::string& inf) 
+info_struct::Stop fill::ParseStop(std::string& inf)
 {
-    infostruct::Stop stop;
+    info_struct::Stop stop;
     std::string stop_name = inf.substr(1, inf.find_first_of(':') - inf.find_first_of(' ') - 1);
 
     double latitude = std::stod(inf.substr(inf.find_first_of(':') + 2, inf.find_first_of(',') - 1));
@@ -65,8 +65,8 @@ infostruct::Stop fill::ParseStop(std::string& inf)
     return stop;
 }
 
-infostruct::Bus fill::ParseBus(std::string& inf) {
-    infostruct::Bus bus_info;
+info_struct::Bus fill::ParseBus(std::string& inf) {
+    info_struct::Bus bus_info;
     std::vector<std::string> route_stops;
     std::string route_number = inf.substr(1, inf.find_first_of(':') - 1);
     inf.erase(0, inf.find_first_of(':') + 2);
@@ -89,28 +89,29 @@ infostruct::Bus fill::ParseBus(std::string& inf) {
 }
 
 void fill::AddStopDistances(std::string& inf, info_catalogue_class::TransportCatalogue& ctlg) {
-    if (!inf.empty()) 
+    if (!inf.empty())
     {
         std::string stop_from_name = ParseStop(inf).name;
-        infostruct::Stop* from = ctlg.FindBusStop(stop_from_name);
-        while (!inf.empty()) 
+        info_struct::Stop* from = ctlg.FindBusStop(stop_from_name);
+
+        while (!inf.empty())
         {
             int distanse = 0;
             std::string stop_to_name;
             distanse = std::stoi(inf.substr(0, inf.find_first_of("m to ")));
             inf.erase(0, inf.find_first_of("m to ") + 5);
-            if (inf.find("m to ") == inf.npos) 
+            if (inf.find("m to ") == inf.npos)
             {
                 stop_to_name = inf.substr(0, inf.npos - 1);
-                infostruct::Stop* to = ctlg.FindBusStop(stop_to_name);
+                info_struct::Stop* to = ctlg.FindBusStop(stop_to_name);
                 ctlg.SetStopDistance(from, to, distanse);
                 ctlg.SetStopDistance(to, from, distanse);
                 inf.clear();
             }
-            else 
+            else
             {
                 stop_to_name = inf.substr(0, inf.find_first_of(','));
-                infostruct::Stop* to = ctlg.FindBusStop(stop_to_name);
+                info_struct::Stop* to = ctlg.FindBusStop(stop_to_name);
                 ctlg.SetStopDistance(from, to, distanse);
                 ctlg.SetStopDistance(to, from, distanse);
                 inf.erase(0, inf.find_first_of(',') + 2);
