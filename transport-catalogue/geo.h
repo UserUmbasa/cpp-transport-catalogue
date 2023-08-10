@@ -1,14 +1,11 @@
 #pragma once
 
 #include <cmath>
-namespace coordinate 
-{
-    struct Coordinates 
-    {
+namespace coordinate {
+    struct Coordinates {
         double lat;
         double lng;
-        bool operator==(const Coordinates& other) const 
-        {
+        bool operator==(const Coordinates& other) const {
             return lat == other.lat && lng == other.lng;
         }
         bool operator!=(const Coordinates& other) const {
