@@ -6,11 +6,11 @@
 #include <iostream>
 
 
-namespace info_catalogue_class
-{
-	void Transport_Catalogue(std::istream& input, TransportCatalogue& ctlg);
-	info_struct::Bus Parse_Bus(std::string&, TransportCatalogue& ctlg);
-	info_struct::Stop Parse_Stop(std::string&);
-	std::vector<info_struct::Distance> Parse_Distances(const std::string& inf,TransportCatalogue& ctlg);
+namespace fill {
 
+	void TransportCatalogue(std::istream& input, info_catalogue_class::TransportCatalogue&);
+	info_struct::Bus ParseBus(std::string&);
+	info_struct::Stop ParseStop(std::string&);
+	void AddStopDistances(std::string&, info_catalogue_class::TransportCatalogue&);
 }
+
