@@ -15,70 +15,67 @@
 
 namespace info_struct 
 {
-  
-    ////////////////////////////////////////////////////////
-    struct Bus;
+    struct Bus {
+        std::string number;
+        std::vector<std::string> stops;
+        bool circular_route;
+    };
+
 
     struct Stop {
         std::string name;
-        double latitude;
-        double longitude;
-
-        std::vector<Bus*> buses;
+        coordinate::Coordinates coordinates;
     };
 
-    struct Bus {
-        std::string name;
-        std::vector<Stop*> stops;
-        size_t route_length;
-    };
-    struct Distance {
-        const Stop* A;
-        const Stop* B;
-        int distance;
+    struct RouteInfo {
+        size_t stops_count;
+        size_t unique_stops_count;
+        double route_length;
+        double curvature;
     };
     struct DistanceHasher {
         std::hash<const void*> hasher;
 
-        std::size_t operator()(const std::pair<const Stop*, const Stop*> pair_stops) const noexcept 
+        std::size_t operator()(const std::pair<const Stop*, const Stop*> pair_stops) const noexcept
         {
             auto hash_1 = static_cast<const void*>(pair_stops.first);
             auto hash_2 = static_cast<const void*>(pair_stops.second);
             return hasher(hash_1) * 17 + hasher(hash_2);
         }
     };
-
 }
 
 
-namespace info_catalogue_class 
-{
-    typedef  std::unordered_map<std::string_view, info_struct::Stop*> StopMap;
-    typedef  std::unordered_map<std::string_view, info_struct::Bus*> BusMap;
-    typedef  std::unordered_map<std::pair<const info_struct::Stop*, const  info_struct::Stop*>, int, info_struct::DistanceHasher> DistanceMap;
-
-    class TransportCatalogue 
-    {
+namespace info_catalogue_class {
+    class TransportCatalogue {
     public:
-        void Add_Bus(info_struct::Bus&&);
-        void Add_Stop(info_struct::Stop&& stop);       
-        void Add_Distance(const std::vector<info_struct::Distance>& distances);
+        void AddBusRoute(const info_struct::Bus&&);
+        void AddBusStop(info_struct::Stop&);
+        //
+        const info_struct::Bus* FindBusRoute(const std::string&) const;
 
-        size_t get_distance_to_bus(info_struct::Bus* bus);
-        size_t get_distance_stop(const info_struct::Stop* start, const info_struct::Stop* finish);
-        info_struct::Stop* get_stop(std::string_view stop_name);
-        info_struct::Bus* get_bus(std::string_view bus_name);
+        info_struct::Stop* FindBusStop(const std::string&) const;
 
-        std::unordered_set<const info_struct::Bus*> stop_get_uniq_buses(info_struct::Stop* stop);
-        std::unordered_set<const info_struct::Stop*> get_uniq_stops(info_struct::Bus* bus);
-        double get_length(info_struct::Bus* bus);
+        const info_struct::RouteInfo BusRouteInformation(const std::string&) const;
+        std::set<std::string>BusToStop(const std::string&) const;
+
+        void SetStopDistance(info_struct::Stop*, info_struct::Stop*, int);
+
+        int GetStopDistance(const info_struct::Stop*, const info_struct::Stop*) const;
+
+        auto ChekDistance()
+        {
+            return Distance;
+        }
 
     private:
+        size_t UniqueStopsCount(const std::string&) const;
         std::deque<info_struct::Bus> buses_;
         std::deque<info_struct::Stop> stops_;
-        StopMap stopname_to_stop;
-        DistanceMap distance_to_stop;
-        BusMap busname_to_bus;
-
+        std::unordered_map<std::string_view, const info_struct::Bus*> finderbus_;
+        std::unordered_map<std::string_view, info_struct::Stop*> finderstop_;
+        std::unordered_map<std::string, std::set<std::string>> bustoforstop_;
+        //где ключ пара остановок, значение - расстояние между ними
+        std::unordered_map<std::pair<const info_struct::Stop*, const  info_struct::Stop*>, int, info_struct::DistanceHasher> Distance;
     };
 }
