@@ -92,10 +92,10 @@ namespace renderer
             : render_settings_(render_settings)
         {}
 
-        std::vector<svg::Polyline> RouteLines(const std::map<std::string_view, const domain::Bus*>&, const SphereProjector&) const;
-        std::vector<svg::Text> BusLabel(const std::map<std::string_view, const domain::Bus*>&, const SphereProjector&) const;
-        std::vector<svg::Circle> StopsSymbols(const std::map<std::string_view, const domain::Stop*>&, const SphereProjector&) const;
-        std::vector<svg::Text> StopsLabels(const std::map<std::string_view, const domain::Stop*>&, const SphereProjector&) const;
+        std::vector<svg::Polyline> FillRouteLines(const std::map<std::string_view, const domain::Bus*>&, const SphereProjector&) const;
+        std::vector<svg::Text> FillBusLabel(const std::map<std::string_view, const domain::Bus*>&, const SphereProjector&) const;
+        std::vector<svg::Circle> FillStopsSymbols(const std::map<std::string_view, const domain::Stop*>&, const SphereProjector&) const;
+        std::vector<svg::Text> FillStopsLabels(const std::map<std::string_view, const domain::Stop*>&, const SphereProjector&) const;
 
         svg::Document SVG(const std::map<std::string_view, const domain::Bus*>&) const;
 
