@@ -18,20 +18,11 @@ namespace json {
         using runtime_error::runtime_error;
     };
 
-    class Node {
+    class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> 
+    {
     public:
-
-        using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
-
-        Node() = default;
-        Node(Array);
-        Node(bool);
-        Node(double);
-        Node(std::nullptr_t);
-        Node(Dict);
-        Node(int);
-        Node(std::string);
-
+        using variant::variant;
+        using Value = variant;
 
         bool IsInt() const;
         bool IsDouble() const;
@@ -50,12 +41,13 @@ namespace json {
         const Dict& AsMap() const;
 
         const Value& GetValue() const {
-            return value_;
+            return *this;
         };
 
     private:
         Value value_;
     };
+
 
     inline bool operator==(const Node& lhs, const Node& rhs) {
         return lhs.GetValue() == rhs.GetValue();
