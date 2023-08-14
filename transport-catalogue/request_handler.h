@@ -11,7 +11,8 @@ public:
     RequestHandler(const info_catalogue::TransportCatalogue& catalogue, const renderer::MapRenderer& renderer) : catalogue_(catalogue), renderer_(renderer) {
     }
 
-    std::optional<domain::RouteInforamtion> GetBusStat(const std::string_view) const;
+    std::optional<domain::RouteInforamtion> GetBusStat(const std::string_view) const; 
+
     const std::set<std::string> GetBusesByStop(std::string_view) const;
     bool BusNumber(const std::string_view) const;
     bool StopName(const std::string_view) const;
