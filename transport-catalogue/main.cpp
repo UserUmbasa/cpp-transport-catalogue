@@ -1,8 +1,18 @@
-#include "input_reader.h"
-#include "stat_reader.h"
+#include "json_reader.h"
+#include "request_handler.h"
 
 int main() {
-    info_catalogue_class::TransportCatalogue catalogue;
-    fill::TransportCatalogue(std::cin, catalogue);
-    out::Show_data_on_request(std::cin, catalogue, std::cout);
+    info_catalogue::TransportCatalogue catalogue;
+    jReader json_doc(std::cin);
+
+    json_doc.FillCatalogue(catalogue);
+
+    const auto& stat_requests = json_doc.StatRequests();
+    const auto& render_settings = json_doc.RenderSettings().AsMap();
+    const auto& renderer = json_doc.FillRenderSettings(render_settings);
+
+    RequestHandler rh(catalogue, renderer);
+    json_doc.ProcessRequests(stat_requests, rh);
+
+  
 }
