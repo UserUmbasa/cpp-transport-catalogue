@@ -6,6 +6,7 @@
 #include "request_handler.h"
 
 #include <iostream>
+#include "svg.h"
 
 class jReader {
 public:
@@ -21,6 +22,9 @@ public:
     const json::Node PrintStop(const json::Dict& request_, RequestHandler& rh) const;
     const json::Node PrintRoute(const json::Dict& request_map, RequestHandler& rh) const;
     const json::Node PrintMap(const json::Dict& request_, RequestHandler& rh) const;
+
+    svg::Rgb* ParseArrRgb(const json::Array& color) const;
+  
 
 private:
     json::Document input_;
