@@ -1,24 +1,30 @@
 #include "json_reader.h"
 
-const json::Node& jReader::BaseRequests() const {
-    if (!input_.GetRoot().AsMap().count("base_requests")) {
+const json::Node& jReader::BaseRequests() const 
+{
+    auto help = &input_.GetRoot().AsMap();
+    if (!help->count("base_requests")) {
         return null_;
     }
-    return input_.GetRoot().AsMap().at("base_requests");
+    return (help->at("base_requests"));
+ }
+
+const json::Node& jReader::StatRequests() const 
+{
+    auto help = &input_.GetRoot().AsMap();
+    if (!help->count("stat_requests")) {
+        return null_;
+    }
+    return help->at("stat_requests");
 }
 
-const json::Node& jReader::StatRequests() const {
-    if (!input_.GetRoot().AsMap().count("stat_requests")) {
+const json::Node& jReader::RenderSettings() const 
+{
+    auto help = &input_.GetRoot().AsMap();
+    if (!help->count("render_settings")) {
         return null_;
     }
-    return input_.GetRoot().AsMap().at("stat_requests");
-}
-
-const json::Node& jReader::RenderSettings() const {
-    if (!input_.GetRoot().AsMap().count("render_settings")) {
-        return null_;
-    }
-    return input_.GetRoot().AsMap().at("render_settings");
+    return help->at("render_settings");
 }
 
 void jReader::ProcessRequests(const json::Node& stat_requests, RequestHandler& rh) const {
@@ -53,7 +59,6 @@ void jReader::FillCatalogue(info_catalogue::TransportCatalogue& ctlg) {
         }
     }
     FillStopDistances(ctlg);
-
     for (auto& request_bus : arr) {
         const auto& request_bus_map = request_bus.AsMap();
         const auto& type = request_bus_map.at("type").AsString();
@@ -63,7 +68,6 @@ void jReader::FillCatalogue(info_catalogue::TransportCatalogue& ctlg) {
         }
     }
 }
-
 std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> jReader::FillStop(const json::Dict& request_map) const {
     std::string_view stop_name = request_map.at("name").AsString();
     geo::Coordinates coordinates = { request_map.at("latitude").AsDouble(), request_map.at("longitude").AsDouble() };
@@ -115,32 +119,40 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Dict& request_) co
     render_settings.stop_label_font_size = request_.at("stop_label_font_size").AsInt();
     const json::Array& stop_label_offset = request_.at("stop_label_offset").AsArray();
     render_settings.stop_label_offset = { stop_label_offset[0].AsDouble(), stop_label_offset[1].AsDouble() };
-
-    if (request_.at("underlayer_color").IsString()) render_settings.underlayer_color = request_.at("underlayer_color").AsString();
-    else if (request_.at("underlayer_color").IsArray()) {
+    // строка
+    if (request_.at("underlayer_color").IsString()) 
+    {
+        render_settings.underlayer_color = request_.at("underlayer_color").AsString();
+    }
+    // массив
+    else if (request_.at("underlayer_color").IsArray())
+    {
         const json::Array& underlayer_color = request_.at("underlayer_color").AsArray();
-        if (underlayer_color.size() == 3) {
-            render_settings.underlayer_color = svg::Rgb(underlayer_color[0].AsInt(), underlayer_color[1].AsInt(), underlayer_color[2].AsInt());
-        }
-        else if (underlayer_color.size() == 4) {
-            render_settings.underlayer_color = svg::Rgba(underlayer_color[0].AsInt(), underlayer_color[1].AsInt(), underlayer_color[2].AsInt(), underlayer_color[3].AsDouble());
+        if(underlayer_color.size() == 3 || underlayer_color.size() == 4)
+        {
+            render_settings.underlayer_color = *ParseArrRgb(underlayer_color);
         }
         else throw std::logic_error("error colortype");
     }
     else throw std::logic_error("error color");
-
     render_settings.underlayer_width = request_.at("underlayer_width").AsDouble();
-
     const json::Array& color_palette = request_.at("color_palette").AsArray();
-    for (const auto& color_element : color_palette) {
-        if (color_element.IsString()) render_settings.color_palette.push_back(color_element.AsString());
-        else if (color_element.IsArray()) {
+
+    for (const auto& color_element : color_palette) 
+    {
+        //строка
+        if (color_element.IsString()) 
+        {
+            render_settings.color_palette.push_back(color_element.AsString());
+        }
+        //массив
+        else if (color_element.IsArray())
+        {
             const json::Array& color_type = color_element.AsArray();
-            if (color_type.size() == 3) {
-                render_settings.color_palette.push_back(svg::Rgb(color_type[0].AsInt(), color_type[1].AsInt(), color_type[2].AsInt()));
-            }
-            else if (color_type.size() == 4) {
-                render_settings.color_palette.push_back(svg::Rgba(color_type[0].AsInt(), color_type[1].AsInt(), color_type[2].AsInt(), color_type[3].AsDouble()));
+
+            if (color_type.size() == 3 || color_type.size() == 4)
+            {
+                render_settings.color_palette.push_back(*ParseArrRgb(color_type));
             }
             else throw std::logic_error("error type");
         }
@@ -166,9 +178,6 @@ const json::Node jReader::PrintRoute(const json::Dict& request_map, RequestHandl
 
     return json::Node{ result };
 }
-
-
-
 const json::Node jReader::PrintStop(const json::Dict& request_, RequestHandler& rh) const {
     json::Dict result;
     const std::string& stop_name = request_.at("name").AsString();
@@ -186,7 +195,6 @@ const json::Node jReader::PrintStop(const json::Dict& request_, RequestHandler& 
 
     return json::Node{ result };
 }
-
 const json::Node jReader::PrintMap(const json::Dict& request_, RequestHandler& rh) const {
     json::Dict result;
     result["request_id"] = request_.at("id").AsInt();
@@ -196,4 +204,19 @@ const json::Node jReader::PrintMap(const json::Dict& request_, RequestHandler& r
     result["map"] = strm.str();
 
     return json::Node{ result };
+}
+svg::Rgb* jReader::ParseArrRgb(const json::Array& color) const
+{
+    if (color.size() == 3)
+    {
+        auto help = svg::Rgb(color[0].AsInt(), color[1].AsInt(), color[2].AsInt());
+        //svg::Rgb* ptr = &help;
+        return &help;
+    }
+    else
+    {
+        auto help = svg::Rgba(color[0].AsInt(), color[1].AsInt(), color[2].AsInt(), color[3].AsDouble());
+        //svg::Rgba* ptr = &help;
+        return &help;
+    }
 }
