@@ -8,11 +8,11 @@
 #include <iostream>
 #include "svg.h"
 
-class jReader {
+class jReader 
+{
 public:
     jReader(std::istream& input) : input_(json::Load(input)) {
     }
-
     const json::Node& RenderSettings() const;
     const json::Node& BaseRequests() const;
     const json::Node& StatRequests() const;
@@ -23,8 +23,7 @@ public:
     const json::Node PrintRoute(const json::Dict& request_map, RequestHandler& rh) const;
     const json::Node PrintMap(const json::Dict& request_, RequestHandler& rh) const;
 
-    svg::Rgb* ParseArrRgb(const json::Array& color) const;
-  
+    svg::Color ParseRgb(const json::Array& color) const;    
 
 private:
     json::Document input_;
