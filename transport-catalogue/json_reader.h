@@ -4,24 +4,22 @@
 #include "transport_catalogue.h"
 #include "map_renderer.h"
 #include "request_handler.h"
-
-#include <iostream>
 #include "svg.h"
+#include"json_builder.h"
+#include <iostream>
 
 class jReader 
 {
 public:
+
     jReader(std::istream& input) : input_(json::Load(input)) {
     }
+
     const json::Node& RenderSettings() const;
     const json::Node& BaseRequests() const;
     const json::Node& StatRequests() const;
-    void ProcessRequests(const json::Node& stat_requests, RequestHandler& rh) const;
     void FillCatalogue(info_catalogue::TransportCatalogue& ctlg);
     renderer::MapRenderer FillRenderSettings(const json::Dict& request_map) const;
-    const json::Node PrintStop(const json::Dict& request_, RequestHandler& rh) const;
-    const json::Node PrintRoute(const json::Dict& request_map, RequestHandler& rh) const;
-    const json::Node PrintMap(const json::Dict& request_, RequestHandler& rh) const;
 
     svg::Color ParseRgb(const json::Array& color) const;    
 
