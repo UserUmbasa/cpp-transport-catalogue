@@ -6,7 +6,8 @@
 #include <vector>
 #include <variant>
 
-namespace json {
+namespace json 
+{
 
     class Node;
 
@@ -44,8 +45,6 @@ namespace json {
             return *this;
         };
 
-    private:
-        Value value_;
     };
 
 
@@ -104,3 +103,4 @@ namespace json {
     void Print(const Document& doc, std::ostream& output);
 
 }
+
