@@ -1,7 +1,8 @@
 #include "json.h"
 
 using namespace std;
-namespace json {
+namespace json 
+{
     namespace {
 
         Node LoadNode(istream& input);
@@ -182,20 +183,27 @@ namespace json {
             return Node(str);
         }
 
-        Node LoadDict(std::istream& input) {
-            Dict dictionary;
+        Node LoadDict(std::istream& input) 
+        {
+            //Node   std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>
+            Dict dictionary; //Dict = std::map<std::string, Node>;
 
-            for (char ch; input >> ch && ch != '}';) {
+            for (char ch; input >> ch && ch != '}';) 
+            {
 
-                if (ch == '"') {
+                if (ch == '"') 
+                {
+                    // "base_requests"
                     std::string key = LoadString(input).AsString();
-
-                    if (input >> ch && ch == ':') {
-
-                        if (dictionary.find(key) != dictionary.end()) {
+                    // если символ ':' то
+                    if (input >> ch && ch == ':') 
+                    {
+                        // если ключ, т.е "base_requests" найден то ошибка
+                        if (dictionary.find(key) != dictionary.end()) 
+                        {
                             throw ParsingError("error '"s + key + "'found");
                         }
-
+                        //иначе добавляем в базу ключ "base_requests" и значение
                         dictionary.emplace(std::move(key), LoadNode(input));
 
                     }
@@ -217,12 +225,14 @@ namespace json {
             }
 
         }
-
+        //читаем поток по чарно
         Node LoadNode(istream& input) {
             char c;
             input >> c;
 
-            if (c == '[') {
+            if (c == '[') 
+            {
+                //vector<Node> array
                 return LoadArray(input);
             }
             else if (c == '{') {
@@ -271,6 +281,7 @@ namespace json {
     bool Node::IsMap() const {
         return std::holds_alternative<Dict>(*this);
     }
+
 
     const Array& Node::AsArray() const {
         using namespace std::literals;
@@ -453,4 +464,4 @@ namespace json {
     }
 
 
-}
+}//end namespace json
