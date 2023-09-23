@@ -19,7 +19,6 @@ const json::Node& jReader::StatRequests() const
     }
     return (tmp->second);
 }
-
 const json::Node& jReader::RenderSettings() const
 {
     auto help = &input_.GetRoot().AsMap();
@@ -29,7 +28,15 @@ const json::Node& jReader::RenderSettings() const
     }
     return (tmp->second);
 }
-
+const json::Node& jReader::RoutingSettings() const 
+{
+    auto help = &input_.GetRoot().AsMap();
+    auto tmp = help->find("routing_settings");
+    if (tmp == help->end()) {
+        return null_;
+    }
+    return (tmp->second);
+}
 void jReader::FillCatalogue(info_catalogue::TransportCatalogue& ctlg) {
     const json::Array& arr = BaseRequests().AsArray();
     for (auto& request_stops : arr) {
@@ -51,7 +58,6 @@ void jReader::FillCatalogue(info_catalogue::TransportCatalogue& ctlg) {
         }
     }
 }
-
 std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> jReader::FillStop(const json::Dict& request_map) const {
     std::string_view stop_name = request_map.at("name").AsString();
     geo::Coordinates coordinates = { request_map.at("latitude").AsDouble(), request_map.at("longitude").AsDouble() };
@@ -86,11 +92,10 @@ std::tuple<std::string_view, std::vector<const domain::Stop*>, bool> jReader::Fi
         stops.push_back(ctlg.FindBusStop(stop.AsString()));
     }
     bool circular_route = request_map.at("is_roundtrip").AsBool();
-
     return std::make_tuple(bus_number, stops, circular_route);
 }
-
-renderer::MapRenderer jReader::FillRenderSettings(const json::Dict& request_) const {
+renderer::MapRenderer jReader::FillRenderSettings(const json::Node& request) const {
+    json::Dict request_ = request.AsMap();
     renderer::RenderSettings render_settings;
     render_settings.width = request_.at("width").AsDouble();
     render_settings.height = request_.at("height").AsDouble();
@@ -103,7 +108,6 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Dict& request_) co
     render_settings.stop_label_font_size = request_.at("stop_label_font_size").AsInt();
     const json::Array& stop_label_offset = request_.at("stop_label_offset").AsArray();
     render_settings.stop_label_offset = { stop_label_offset[0].AsDouble(), stop_label_offset[1].AsDouble() };    
-
     if (request_.at("underlayer_color").IsString())  
     {
         render_settings.underlayer_color = request_.at("underlayer_color").AsString();
@@ -113,12 +117,9 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Dict& request_) co
     {
         const json::Array& underlayer_color = request_.at("underlayer_color").AsArray();
         render_settings.underlayer_color = ParseRgb(underlayer_color);
-
     }
     else throw std::logic_error("error color");
-
     render_settings.underlayer_width = request_.at("underlayer_width").AsDouble();
-
     const json::Array& color_palette = request_.at("color_palette").AsArray();
     for (const auto& color_element : color_palette) 
     {
@@ -138,11 +139,15 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Dict& request_) co
 
     return render_settings;
 }
-
-
+transport_router::Router jReader::FillRoutingSettings(const json::Node& settings) const
+{
+    transport_router::Router routing_settings;
+    return transport_router::Router{ settings.AsMap().at("bus_wait_time").AsInt(), settings.AsMap().at("bus_velocity").AsDouble() };
+}
 
 svg::Color jReader::ParseRgb(const json::Array& color) const
 {
+    svg::Color tmp; //std::variant<std::monostate, std::string,svg::Rgb, svg::Rgba>;
     if (color.size() == 3)
     {
         tmp = svg::Rgb(color[0].AsInt(), color[1].AsInt(), color[2].AsInt());
