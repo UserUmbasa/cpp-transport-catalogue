@@ -11,15 +11,17 @@
 class jReader 
 {
 public:
-
     jReader(std::istream& input) : input_(json::Load(input)) {
     }
 
     const json::Node& RenderSettings() const;
     const json::Node& BaseRequests() const;
     const json::Node& StatRequests() const;
+    const json::Node& RoutingSettings() const;
+
     void FillCatalogue(info_catalogue::TransportCatalogue& ctlg);
-    renderer::MapRenderer FillRenderSettings(const json::Dict& request_map) const;
+    renderer::MapRenderer FillRenderSettings(const json::Node& request_map) const;
+    transport_router::Router FillRoutingSettings(const json::Node& settings) const;
 
     svg::Color ParseRgb(const json::Array& color) const;    
 
