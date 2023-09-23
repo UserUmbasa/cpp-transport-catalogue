@@ -30,6 +30,7 @@ namespace info_catalogue
         void SetStopDistance(const domain::Stop* one, const domain::Stop* two, const int dist);
         int GetStopDistance(const domain::Stop* one, const domain::Stop* two) const;
         const std::map<std::string_view, const domain::Bus*> GetSortedBuses() const;
+        const std::map<std::string_view, const domain::Stop*> GetSortedStops() const;
         const domain::RouteInforamtion GetBusStat(const std::string_view& bus_number) const;
 
     private:
@@ -40,3 +41,4 @@ namespace info_catalogue
         std::unordered_map<std::pair<const domain::Stop*, const domain::Stop*>, int, domain::Hasher> stop_distances_;
     };
 }
+
