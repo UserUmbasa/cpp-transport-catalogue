@@ -1,6 +1,6 @@
 #include "json_reader.h"
 
-const json::Node& jReader::BaseRequests() const 
+const json::Node& jReader::BaseRequests() const
 {
     auto help = &input_.GetRoot().AsMap();
     auto tmp = help->find("base_requests");
@@ -9,7 +9,7 @@ const json::Node& jReader::BaseRequests() const
     }
     return (tmp->second);
 
- }
+}
 const json::Node& jReader::StatRequests() const
 {
     auto help = &input_.GetRoot().AsMap();
@@ -28,7 +28,7 @@ const json::Node& jReader::RenderSettings() const
     }
     return (tmp->second);
 }
-const json::Node& jReader::RoutingSettings() const 
+const json::Node& jReader::RoutingSettings() const
 {
     auto help = &input_.GetRoot().AsMap();
     auto tmp = help->find("routing_settings");
@@ -107,8 +107,8 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Node& request) con
     render_settings.bus_label_offset = { bus_label_offset[0].AsDouble(), bus_label_offset[1].AsDouble() };
     render_settings.stop_label_font_size = request_.at("stop_label_font_size").AsInt();
     const json::Array& stop_label_offset = request_.at("stop_label_offset").AsArray();
-    render_settings.stop_label_offset = { stop_label_offset[0].AsDouble(), stop_label_offset[1].AsDouble() };    
-    if (request_.at("underlayer_color").IsString())  
+    render_settings.stop_label_offset = { stop_label_offset[0].AsDouble(), stop_label_offset[1].AsDouble() };
+    if (request_.at("underlayer_color").IsString())
     {
         render_settings.underlayer_color = request_.at("underlayer_color").AsString();
     }
@@ -121,10 +121,10 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Node& request) con
     else throw std::logic_error("error color");
     render_settings.underlayer_width = request_.at("underlayer_width").AsDouble();
     const json::Array& color_palette = request_.at("color_palette").AsArray();
-    for (const auto& color_element : color_palette) 
+    for (const auto& color_element : color_palette)
     {
         //строка
-        if (color_element.IsString()) 
+        if (color_element.IsString())
         {
             render_settings.color_palette.push_back(color_element.AsString());
         }
@@ -138,11 +138,6 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Node& request) con
     }
 
     return render_settings;
-}
-transport_router::Router jReader::FillRoutingSettings(const json::Node& settings) const
-{
-    transport_router::Router routing_settings;
-    return transport_router::Router{ settings.AsMap().at("bus_wait_time").AsInt(), settings.AsMap().at("bus_velocity").AsDouble() };
 }
 
 svg::Color jReader::ParseRgb(const json::Array& color) const
@@ -160,4 +155,3 @@ svg::Color jReader::ParseRgb(const json::Array& color) const
     }
     else throw std::logic_error("error colortype");
 }
-
