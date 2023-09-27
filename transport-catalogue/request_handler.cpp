@@ -8,9 +8,10 @@ std::optional<domain::RouteInforamtion> RequestHandler::GetBusStat(const std::st
 const std::optional<graph::Router<double>::RouteInfo> RequestHandler::GetOptimalRoute(const std::string_view stop_from, const std::string_view stop_to) const {
     return router_.FindRoute(stop_from, stop_to);
 }
-const graph::DirectedWeightedGraph<double>& RequestHandler::GetRouterGraph() const {
-    return router_.GetGraph();
-}
+//const graph::DirectedWeightedGraph<double>& RequestHandler::GetRouterGraph() const {
+//    
+//    return router_.GetGraph();
+//}
 
 const std::set<std::string> RequestHandler::GetBusesByStop(std::string_view stop_name) const {
     return catalogue_.FindBusStop(stop_name)->buses_by_stop;
@@ -135,7 +136,8 @@ const json::Node RequestHandler::PrintRouting(const json::Dict& request_map) con
         double total_time = 0.0;
         items.reserve(routing.value().edges.size());
         for (auto& edge_id : routing.value().edges) {
-            const graph::Edge<double> edge = GetRouterGraph().GetEdge(edge_id);
+            const graph::Edge<double> edge = router_.GetGraph().GetEdge(edge_id);
+            //const graph::Edge<double> edge = GetRouterGraph().GetEdge(edge_id);
             
             if (edge.quality == 0) {
                 items.emplace_back(json::Node(json::Builder{}
