@@ -8,7 +8,7 @@
 #include"json_builder.h"
 #include <iostream>
 
-class jReader 
+class jReader
 {
 public:
     jReader(std::istream& input) : input_(json::Load(input)) {
@@ -21,9 +21,8 @@ public:
 
     void FillCatalogue(info_catalogue::TransportCatalogue& ctlg);
     renderer::MapRenderer FillRenderSettings(const json::Node& request_map) const;
-    transport_router::Router FillRoutingSettings(const json::Node& settings) const;
 
-    svg::Color ParseRgb(const json::Array& color) const;    
+    svg::Color ParseRgb(const json::Array& color) const;
 
 private:
     json::Document input_;
@@ -33,3 +32,4 @@ private:
     void FillStopDistances(info_catalogue::TransportCatalogue& ctlg) const;
     std::tuple<std::string_view, std::vector<const domain::Stop*>, bool> FillRoute(const json::Dict& request_map, info_catalogue::TransportCatalogue& ctlg) const;
 };
+
