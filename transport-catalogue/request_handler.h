@@ -12,13 +12,13 @@ public:
     RequestHandler(const info_catalogue::TransportCatalogue& catalogue, const renderer::MapRenderer& renderer, const transport_router::Router& router) : catalogue_(catalogue), renderer_(renderer), router_(router)
     {}
 
-    std::optional<domain::RouteInforamtion> GetBusStat(const std::string_view) const; 
+    std::optional<domain::RouteInforamtion> GetBusStat(const std::string_view) const;
     const std::set<std::string> GetBusesByStop(std::string_view) const;
     bool BusNumber(const std::string_view) const;
     bool StopName(const std::string_view) const;
 
     const std::optional<graph::Router<double>::RouteInfo> GetOptimalRoute(const std::string_view stop_from, const std::string_view stop_to) const;
-    const graph::DirectedWeightedGraph<double>& GetRouterGraph() const;
+    //const graph::DirectedWeightedGraph<double>& GetRouterGraph() const;
 
     void ProcessRequests(const json::Node& stat_requests) const;
 
@@ -33,4 +33,5 @@ private:
     const info_catalogue::TransportCatalogue& catalogue_;
     const renderer::MapRenderer& renderer_;
     const transport_router::Router& router_;
+    
 };
