@@ -1,27 +1,28 @@
 #include "transport_router.h"
 
 namespace transport_router {
-
-    const graph::DirectedWeightedGraph<double>& Router::BuildGraph(const info_catalogue::TransportCatalogue& catalogue) 
+    void Router::Add_Stop(const info_catalogue::TransportCatalogue& catalogue) 
     {
-        const auto& all_stops = catalogue.GetSortedStops();
-        const auto& all_buses = catalogue.GetSortedBuses();
+        const std::map<std::string_view, const domain::Stop*>& all_stops = catalogue.GetSortedStops();
         graph::DirectedWeightedGraph<double> stops_graph(all_stops.size() * 2);
-        std::map<std::string, graph::VertexId> stop_ids;
         graph::VertexId vertex_id = 0;
 
-        for (const auto& [stop_name, stop_info] : all_stops) 
+        for (const auto& [stop_name, stop_info] : all_stops)
         {
-            stop_ids[stop_info->name] = vertex_id;
-            //const Edge<Weight>& edge) {
-            const graph::Edge<double> edge { stop_info->name, 0, vertex_id,  ++vertex_id, static_cast<double>(bus_wait_time_) };
+            stop_ids_[stop_info->name] = vertex_id;
+            const graph::Edge<double> edge { stop_info->name, 0, vertex_id, ++vertex_id, static_cast<double>(bus_wait_time_) };
             stops_graph.AddEdge(edge);
             ++vertex_id;
         }
-        stop_ids_ = std::move(stop_ids);
+        graph_ = std::move(stops_graph);
+    }
 
-        for_each( all_buses.begin(), all_buses.end(), [&stops_graph, this, &catalogue](const auto& item) 
-        {
+    void Router::Add_Bus(const info_catalogue::TransportCatalogue& catalogue)
+    {
+        const std::map<std::string_view, const domain::Bus*>& all_buses = catalogue.GetSortedBuses();
+        graph::DirectedWeightedGraph<double> stops_graph = std::move(graph_);
+        for_each(all_buses.begin(), all_buses.end(), [&stops_graph, this, &catalogue](const auto& item)
+            {
                 const auto& bus_info = item.second;
                 const auto& stops = bus_info->stops;
                 size_t stops_count = stops.size();
@@ -51,12 +52,10 @@ namespace transport_router {
                     }
                 }
             });
-
         graph_ = std::move(stops_graph);
         router_ = std::make_unique<graph::Router<double>>(graph_);
-
-        return graph_;
     }
+
 
     const std::optional<graph::Router<double>::RouteInfo> Router::FindRoute(const std::string_view stop_from, const std::string_view stop_to) const {
         return router_->BuildRoute(stop_ids_.at(std::string(stop_from)), stop_ids_.at(std::string(stop_to)));
