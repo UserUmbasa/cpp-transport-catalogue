@@ -1,7 +1,7 @@
 #include "transport_router.h"
 
 namespace transport_router {
-    void Router::Add_Stop(const info_catalogue::TransportCatalogue& catalogue) 
+    void Router::AddStop(const info_catalogue::TransportCatalogue& catalogue) 
     {
         const std::map<std::string_view, const domain::Stop*>& all_stops = catalogue.GetSortedStops();
         graph::DirectedWeightedGraph<double> stops_graph(all_stops.size() * 2);
@@ -10,14 +10,14 @@ namespace transport_router {
         for (const auto& [stop_name, stop_info] : all_stops)
         {
             stop_ids_[stop_info->name] = vertex_id;
-            const graph::Edge<double> edge { stop_info->name, 0, vertex_id, ++vertex_id, static_cast<double>(bus_wait_time_) };
+            const graph::Edge<double> edge { stop_info->name, 0, vertex_id, ++vertex_id, static_cast<double>(routset_.bus_wait_time) };
             stops_graph.AddEdge(edge);
             ++vertex_id;
         }
         graph_ = std::move(stops_graph);
     }
 
-    void Router::Add_Bus(const info_catalogue::TransportCatalogue& catalogue)
+    void Router::AddBus(const info_catalogue::TransportCatalogue& catalogue)
     {
         const std::map<std::string_view, const domain::Bus*>& all_buses = catalogue.GetSortedBuses();
         graph::DirectedWeightedGraph<double> stops_graph = std::move(graph_);
@@ -40,14 +40,14 @@ namespace transport_router {
                                               j - i,
                                               stop_ids_.at(stop_from->name) + 1,
                                               stop_ids_.at(stop_to->name),
-                                              static_cast<double>(dist_sum) / (bus_velocity_ * (100.0 / 6.0)) });
+                                              static_cast<double>(dist_sum) / (routset_.bus_velocity * (100.0 / 6.0)) });
 
                         if (!bus_info->is_circle) {
                             stops_graph.AddEdge({ bus_info->number,
                                                   j - i,
                                                   stop_ids_.at(stop_to->name) + 1,
                                                   stop_ids_.at(stop_from->name),
-                                                  static_cast<double>(dist_sum_inverse) / (bus_velocity_ * (100.0 / 6.0)) });
+                                                  static_cast<double>(dist_sum_inverse) / (routset_.bus_velocity * (100.0 / 6.0)) });
                         }
                     }
                 }
@@ -61,8 +61,9 @@ namespace transport_router {
         return router_->BuildRoute(stop_ids_.at(std::string(stop_from)), stop_ids_.at(std::string(stop_to)));
     }
 
-    const graph::DirectedWeightedGraph<double>& Router::GetGraph() const {
-        return graph_;
+    const graph::Edge<double>& Router::GetGraph(const size_t edge_id) const {
+        
+        return graph_.GetEdge(edge_id);
     }
 
 }
