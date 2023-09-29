@@ -13,7 +13,6 @@ int main()
 
     const transport_router::Router router = { doc.RoutingSettings(), catalogue };
 
-    RequestHandler rh(catalogue, renderer, router);
-    rh.ProcessRequests(stat_requests);
+    doc.ProcessRequests(stat_requests, catalogue);
 
 }
