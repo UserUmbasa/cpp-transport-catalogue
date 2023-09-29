@@ -1,3 +1,4 @@
+
 #pragma once
 #include "geo.h"
 #include <string>
@@ -6,6 +7,10 @@
 #include <unordered_map>
 
 namespace domain {
+    struct RoutSet {
+        int bus_wait_time = 0;
+        double bus_velocity = 0.0;
+    };
 
     struct Stop {
         std::string name;
@@ -35,3 +40,4 @@ namespace domain {
     };
 
 }
+
