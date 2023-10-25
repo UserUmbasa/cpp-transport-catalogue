@@ -12,6 +12,27 @@
 #include <deque>
 
 namespace svg {
+	struct Rgb {
+		Rgb()
+			: red(0)
+			, green(0)
+			, blue(0) {
+		}
+		Rgb(const uint8_t& r, const uint8_t& g, const uint8_t& b);
+
+		uint8_t red;
+		uint8_t green;
+		uint8_t blue;
+	};
+	struct Rgba : public Rgb {
+		Rgba()
+			: Rgb()
+			, opacity(1.0) {
+		}
+		Rgba(const uint8_t& r, const uint8_t& g, const uint8_t& b, const double& o);
+
+		double opacity ;
+	};
 
 	struct Point {
 		Point() = default;
@@ -58,26 +79,9 @@ namespace svg {
 		ROUND,
 	};
 
-	struct Rgb {
-		Rgb() = default;
-		Rgb(const uint8_t& r, const uint8_t& g, const uint8_t& b);
-
-		uint8_t
-			red = 0,
-			green = 0,
-			blue = 0;
-	};
-
-	struct Rgba : public Rgb {
-		Rgba() = default;
-		Rgba(const uint8_t& r, const uint8_t& g, const uint8_t& b, const double& o);
-
-		double opacity = 1.0;
-	};
-
 	using Color = std::variant<std::monostate, std::string, Rgb, Rgba>;
 
-	inline const Color NoneColor{};
+	inline const Color NoneColor{std::monostate() };
 
 	std::ostream& operator<<(std::ostream& out, const StrokeLineCap& line_cap);
 	std::ostream& operator<<(std::ostream& out, const StrokeLineJoin& line_join);
@@ -258,4 +262,6 @@ namespace svg {
 		void Render(std::ostream& out) const;
 	};
 
-}
+} // namespace svg
+
+
