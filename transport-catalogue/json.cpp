@@ -278,11 +278,6 @@ namespace json
     bool Node::IsArray() const {
         return std::holds_alternative<Array>(*this);
     }
-    bool Node::IsMap() const {
-        return std::holds_alternative<Dict>(*this);
-    }
-
-
     const Array& Node::AsArray() const {
         using namespace std::literals;
 
@@ -293,16 +288,19 @@ namespace json
             return std::get<Array>(*this);
         }
     }
+    bool Node::IsDict() const
+    {
+        return std::holds_alternative<Dict>(*this);
+    }
 
-    const Dict& Node::AsMap() const {
+    const Dict& Node::AsDict() const
+    {
         using namespace std::literals;
+        if (!IsDict()) {
+            throw std::logic_error("Not a dict"s);
+        }
 
-        if (!IsMap()) {
-            throw std::logic_error(""s);
-        }
-        else {
-            return std::get<Dict>(*this);
-        }
+        return std::get<Dict>(*this);
     }
 
     const string& Node::AsString() const {
