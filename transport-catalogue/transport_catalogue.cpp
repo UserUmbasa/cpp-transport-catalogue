@@ -108,4 +108,10 @@ const domain::RouteInforamtion info_catalogue::TransportCatalogue::GetBusStat(co
     return bus_stat;
 }
 
+const std::unordered_map<std::pair<const domain::Stop*, const domain::Stop*>, int, domain::Hasher> info_catalogue::TransportCatalogue::GetStopDistances() const
+{
+    return stop_distances_;
+}
+
+
 
