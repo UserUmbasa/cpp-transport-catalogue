@@ -41,9 +41,11 @@ namespace json
 
     DictionaryContext Builder::StartDict()
     {
-        Dict dict;                          
-        Node* help_ptr = new Node(dict); 
-        std::unique_ptr<Node>help_uni_ptr(help_ptr); 
+        //создадим указатель на вариант со значением пустого словаря (using Dict = std::map<std::string, Node>)
+        Dict dict;                          //создаем мап
+        Node* help_ptr = new Node(dict);            //сырой указатель на выделенную ! память
+        std::unique_ptr<Node>help_uni_ptr(help_ptr); //умный указатель 
+        //добавим его в стек указателей (std::move перместить,передать права)
         nodes_stack_.emplace_back(std::move(help_uni_ptr));
         //nodes_stack_.emplace_back(std::move(std::make_unique<Node>(Dict()))); краткая запись
         return DictionaryContext(*this);
@@ -54,9 +56,12 @@ namespace json
         if (nodes_stack_.empty()) {
             throw std::logic_error("unable to create key");
         }
-        Node* help_ptr = new Node(key_);             
-        std::unique_ptr<Node>help_uni_ptr(help_ptr);
-        if (nodes_stack_.back()->IsMap()) {
+        Node* help_ptr = new Node(key_);             //сырой указатель на выделенную ! память
+        std::unique_ptr<Node>help_uni_ptr(help_ptr); //умный указатель 
+        //StartDict должен быть первым вызовом в цепочке (убеждаемся ,что вариант содержит словарь Dict)
+        //добавляем в стек ключ
+        if (nodes_stack_.back()->IsDict()) {
+            //(std::move перместить, передать права)
             nodes_stack_.emplace_back(std::move(help_uni_ptr));
         }
         return KeyContext(*this);
@@ -64,9 +69,11 @@ namespace json
 
     ArrayContext Builder::StartArray()
     {
+        //добавляем в стек вариант с массивом Array (vector<Node>)
         Array arr;
-        Node* help_ptr = new Node(arr);             
-        std::unique_ptr<Node>help_uni_ptr(help_ptr);  
+        Node* help_ptr = new Node(arr);             //сырой указатель на выделенную ! память
+        std::unique_ptr<Node>help_uni_ptr(help_ptr); //умный указатель 
+        //(std::move перместить, передать права)
         nodes_stack_.emplace_back(std::move(help_uni_ptr));
         return ArrayContext(*this);
     }
@@ -94,17 +101,22 @@ namespace json
         if (nodes_stack_.empty()) {
             throw std::logic_error("unable to close as without opening");
         }
+        //присвоим переменной адрес последнего элемента стека StartDict
+        //там всегда по идее висит StartDict
         Node node = *nodes_stack_.back();
-        if (!node.IsMap()) {
+
+        if (!node.IsDict()) {
             throw std::logic_error("object isn't dictionary");
         }
         nodes_stack_.pop_back();
         add_node(node);
+
         return *this;
     }
 
     void Builder::add_node(Node node)
     {
+        //если стек (вектор) пустой ,то присвоим конструируемому объекту адрес ноды
         if (nodes_stack_.empty())
         {
             if (!root_.IsNull()) {
@@ -113,31 +125,48 @@ namespace json
             root_ = node;
             return;
         }
+        //если стек (вектор) не пустой , то посмотрим последний элемент!!! (вариант) на наличие массива или строки
         else {
+            //не содержит Array и не содержит String
             if (!nodes_stack_.back()->IsArray() && !nodes_stack_.back()->IsString()) {
+
                 throw std::logic_error("unable to create node");
             }
+            //если вариант массив Array std::vector<Node>;
             if (nodes_stack_.back()->IsArray())
             {
+                //создадим массив и присвоим ему значение другого массива из последней ноды вектора методом AsArray()
                 Array arr = nodes_stack_.back()->AsArray();
+                //добавим новое значение в массив
                 arr.emplace_back(node);
+                //очистим стек
                 nodes_stack_.pop_back();
-                Node* help_ptr = new Node(arr);             
-                std::unique_ptr<Node>help_uni_ptr(help_ptr); 
+                //добавим новый массив в стек
+                Node* help_ptr = new Node(arr);             //сырой указатель на выделенную ! память
+                std::unique_ptr<Node>help_uni_ptr(help_ptr); //умный указатель 
                 nodes_stack_.emplace_back(std::move(help_uni_ptr));
+
                 return;
             }
+            //если вариант строка (ключ) ,то добавим в мап (Dict) значение Value (ноду - вариант) ;
             if (nodes_stack_.back()->IsString())
             {
+                //вытащим ключ из стека (вариант) и удалим его стека (буфера)
                 std::string str = nodes_stack_.back()->AsString();
+
                 nodes_stack_.pop_back();
-                if (nodes_stack_.back()->IsMap())
+                //убедимся ? что в стеке остался вариант с мапом
+                if (nodes_stack_.back()->IsDict())
                 {
-                    Dict dictionary = nodes_stack_.back()->AsMap();
+                    //переменная (может быть уже не пустым) мап 
+                    Dict dictionary = nodes_stack_.back()->AsDict();
+                    //добавим в него новые данные кей и фалуе
                     dictionary.emplace(str, node);
+                    //удалим из стека последний элемент
                     nodes_stack_.pop_back();
-                    Node* help_ptr = new Node(dictionary);       
-                    std::unique_ptr<Node>help_uni_ptr(help_ptr); 
+                    //добавим в стек новый словарь с новыми значениями
+                    Node* help_ptr = new Node(dictionary);       //сырой указатель на выделенную ! память
+                    std::unique_ptr<Node>help_uni_ptr(help_ptr); //умный указатель 
                     nodes_stack_.emplace_back(std::move(help_uni_ptr));
                 }
                 return;
@@ -145,7 +174,7 @@ namespace json
         }
     }
 
-    Node Builder::Build()
+     Node Builder::Build()
     {
         if (root_.IsNull()) {
             throw std::logic_error("empty json");
