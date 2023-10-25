@@ -4,8 +4,8 @@ namespace svg
 {
 	using namespace std::literals;
 
-	Point::Point(const double& x, const double& y)
-		: x(x), y(y) {}
+	Point::Point(const double& x1, const double& y1)
+		: x(x1), y(y1) {}
 
 	RenderContext::RenderContext(std::ostream& out)
 		: out(out) {}
@@ -228,4 +228,5 @@ namespace svg
 		out << "</svg>"sv;
 	}
 
-}
+} // namespace svg
+
