@@ -2,7 +2,7 @@
 
 const json::Node& jReader::BaseRequests() const
 {
-    auto help = &input_.GetRoot().AsMap();
+    auto help = &input_.GetRoot().AsDict();
     auto tmp = help->find("base_requests");
     if (tmp == help->end()) {
         return null_;
@@ -12,7 +12,7 @@ const json::Node& jReader::BaseRequests() const
 }
 const json::Node& jReader::StatRequests() const
 {
-    auto help = &input_.GetRoot().AsMap();
+    auto help = &input_.GetRoot().AsDict();
     auto tmp = help->find("stat_requests");
     if (tmp == help->end()) {
         return null_;
@@ -21,7 +21,7 @@ const json::Node& jReader::StatRequests() const
 }
 const json::Node& jReader::RenderSettings() const
 {
-    auto help = &input_.GetRoot().AsMap();
+    auto help = &input_.GetRoot().AsDict();
     auto tmp = help->find("render_settings");
     if (tmp == help->end()) {
         return null_;
@@ -30,8 +30,16 @@ const json::Node& jReader::RenderSettings() const
 }
 const json::Node& jReader::RoutingSettings() const
 {
-    auto help = &input_.GetRoot().AsMap();
+    auto help = &input_.GetRoot().AsDict();
     auto tmp = help->find("routing_settings");
+    if (tmp == help->end()) {
+        return null_;
+    }
+    return (tmp->second);
+}
+const json::Node& jReader::SerializationSettings() const {
+    auto help = &input_.GetRoot().AsDict();
+    auto tmp = help->find("serialization_settings");
     if (tmp == help->end()) {
         return null_;
     }
@@ -40,7 +48,7 @@ const json::Node& jReader::RoutingSettings() const
 void jReader::FillCatalogue(Catalogue& ctlg) {
     const json::Array& arr = BaseRequests().AsArray();
     for (auto& request_stops : arr) {
-        const auto& request_stops_map = request_stops.AsMap();
+        const auto& request_stops_map = request_stops.AsDict();
         const auto& type = request_stops_map.at("type").AsString();
         if (type == "Stop") {
             auto [stop_name, coordinates, stop_distances] = FillStop(request_stops_map);
@@ -50,7 +58,7 @@ void jReader::FillCatalogue(Catalogue& ctlg) {
     FillStopDistances(ctlg);
 
     for (auto& request_bus : arr) {
-        const auto& request_bus_map = request_bus.AsMap();
+        const auto& request_bus_map = request_bus.AsDict();
         const auto& type = request_bus_map.at("type").AsString();
         if (type == "Bus") {
             auto [bus_number, stops, circular_route] = FillRoute(request_bus_map, ctlg);
@@ -62,7 +70,7 @@ std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> 
     std::string_view stop_name = request_map.at("name").AsString();
     geo::Coordinates coordinates = { request_map.at("latitude").AsDouble(), request_map.at("longitude").AsDouble() };
     std::map<std::string_view, int> stop_distances;
-    auto& distances = request_map.at("road_distances").AsMap();
+    auto& distances = request_map.at("road_distances").AsDict();
     for (auto& [stop_name, dist] : distances) {
         stop_distances.emplace(stop_name, dist.AsInt());
     }
@@ -72,7 +80,7 @@ std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> 
 void jReader::FillStopDistances(info_catalogue::TransportCatalogue& ctlg) const {
     const json::Array& arr = BaseRequests().AsArray();
     for (auto& request_stops : arr) {
-        const auto& request_stops_map = request_stops.AsMap();
+        const auto& request_stops_map = request_stops.AsDict();
         const auto& type = request_stops_map.at("type").AsString();
         if (type == "Stop") {
             auto [stop_name, coordinates, stop_distances] = FillStop(request_stops_map);
@@ -95,7 +103,7 @@ std::tuple<std::string_view, std::vector<const domain::Stop*>, bool> jReader::Fi
     return std::make_tuple(bus_number, stops, circular_route);
 }
 renderer::MapRenderer jReader::FillRenderSettings(const json::Node& request) const {
-    json::Dict request_ = request.AsMap();
+    json::Dict request_ = request.AsDict();
     renderer::RenderSettings render_settings;
     render_settings.width = request_.at("width").AsDouble();
     render_settings.height = request_.at("height").AsDouble();
@@ -140,6 +148,7 @@ renderer::MapRenderer jReader::FillRenderSettings(const json::Node& request) con
     return render_settings;
 }
 
+
 svg::Color jReader::ParseRgb(const json::Array& color) const
 {
     svg::Color tmp; //std::variant<std::monostate, std::string,svg::Rgb, svg::Rgba>;
@@ -160,12 +169,12 @@ void jReader::ProcessRequests(const json::Node& stat_requests, const Catalogue& 
 {
     json::Array result;
     for (auto& request : stat_requests.AsArray()) {
-        const auto& request_map = request.AsMap();
+        const auto& request_map = request.AsDict();
         const auto& type = request_map.at("type").AsString();
-        if (type == "Stop") result.push_back(PrintStop(request_map, ctlg).AsMap());
-        if (type == "Bus") result.push_back(PrintRoute(request_map, ctlg).AsMap());
-        if (type == "Map") result.push_back(PrintMap(request_map, ctlg).AsMap());
-        if (type == "Route") result.push_back(PrintRouting(request_map, ctlg).AsMap());
+        if (type == "Stop") result.push_back(PrintStop(request_map, ctlg).AsDict());
+        if (type == "Bus") result.push_back(PrintRoute(request_map, ctlg).AsDict());
+        if (type == "Map") result.push_back(PrintMap(request_map, ctlg).AsDict());
+        if (type == "Route") result.push_back(PrintRouting(request_map, ctlg).AsDict());
     }
     json::Print(json::Document{ result }, std::cout);
 }
