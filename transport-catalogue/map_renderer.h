@@ -88,6 +88,7 @@ namespace renderer
 
     class MapRenderer {
     public:
+        MapRenderer() = default;
         MapRenderer(const RenderSettings& render_settings)
             : render_settings_(render_settings)
         {}
@@ -98,9 +99,13 @@ namespace renderer
         std::vector<svg::Text> FillStopsLabels(const std::map<std::string_view, const domain::Stop*>&, const SphereProjector&) const;
 
         svg::Document SVG(const std::map<std::string_view, const domain::Bus*>&) const;
+        //
+        const RenderSettings GetRenderSettings() const;
+        //
 
     private:
         const RenderSettings render_settings_;
     };
 
 }
+
