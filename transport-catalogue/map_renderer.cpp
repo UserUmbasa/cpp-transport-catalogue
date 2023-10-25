@@ -151,5 +151,8 @@ namespace renderer {
 
         return result;
     }
-
+    const RenderSettings MapRenderer::GetRenderSettings() const {
+        return render_settings_;
+    }
 }
+
