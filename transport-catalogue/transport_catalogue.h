@@ -20,7 +20,7 @@ namespace info_catalogue
     class TransportCatalogue {
     public:
         void AddBusRoute(std::string_view bus_number, const std::vector<const domain::Stop*> stops, bool is_circle);
-        void AddBusStop(std::string_view stop_name, const geo::Coordinates coordinates);
+        void AddBusStop(std::string_view stop_name, const geo::Coordinates coordinates);                                //
 
         const domain::Bus* FindBusRoute(std::string_view bus_number) const;
         const domain::Stop* FindBusStop(std::string_view stop_name) const;
@@ -33,6 +33,8 @@ namespace info_catalogue
         const std::map<std::string_view, const domain::Stop*> GetSortedStops() const;
         const domain::RouteInforamtion GetBusStat(const std::string_view& bus_number) const;
 
+        const std::unordered_map<std::pair<const domain::Stop*, const domain::Stop*>, int, domain::Hasher> GetStopDistances() const;
+
     private:
         std::deque<domain::Bus> buses_;
         std::deque<domain::Stop> stops_;
@@ -41,4 +43,6 @@ namespace info_catalogue
         std::unordered_map<std::pair<const domain::Stop*, const domain::Stop*>, int, domain::Hasher> stop_distances_;
     };
 }
+
+
 
