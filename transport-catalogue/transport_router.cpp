@@ -66,4 +66,29 @@ namespace transport_router {
         return graph_.GetEdge(edge_id);
     }
 
+    const graph::DirectedWeightedGraph<double>& Router::GetGraph() const
+    {
+        return graph_;
+    }
+
+    void Router::SetGraph(const graph::DirectedWeightedGraph<double> graph, const std::map<std::string, graph::VertexId> stop_ids)
+    {
+        graph_ = graph;
+        stop_ids_ = stop_ids;
+        router_ = std::make_unique<graph::Router<double>>(graph_);
+    }
+
+    const int Router::GetBusWaitTime() const {
+        return routset_.bus_wait_time;
+    }
+
+    const double Router::GetBusVelocity() const {
+        return routset_.bus_velocity;
+    }
+
+    const std::map<std::string, graph::VertexId> Router::GetStopIds() const
+    {
+        return stop_ids_;
+    }
+
 }
