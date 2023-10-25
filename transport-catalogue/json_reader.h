@@ -2,6 +2,7 @@
 
 #include "json.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 #include "map_renderer.h"
 #include "request_handler.h"
 #include "svg.h"
@@ -20,9 +21,11 @@ public:
     const json::Node& BaseRequests() const;
     const json::Node& StatRequests() const;
     const json::Node& RoutingSettings() const;
+    const json::Node& SerializationSettings() const;
 
     void FillCatalogue(Catalogue& ctlg);
     renderer::MapRenderer FillRenderSettings(const json::Node& request_map) const;
+   
     svg::Color ParseRgb(const json::Array& color) const;
     //--------------print----------
     void ProcessRequests(const json::Node& stat_requests, const Catalogue& ctlg) const;
@@ -40,3 +43,5 @@ private:
     void FillStopDistances(info_catalogue::TransportCatalogue& ctlg) const;
     std::tuple<std::string_view, std::vector<const domain::Stop*>, bool> FillRoute(const json::Dict& request_map, Catalogue& ctlg) const;
 };
+
+
